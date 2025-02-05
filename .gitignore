@@ -1,20 +1,34 @@
-# Виртуальное окружение
-.venv/
+# Операционные системы
+.DS_Store
+Thumbs.db
 
-# PyCharm
+# Локальная среда разработки
+.vscode/
 .idea/
+*.swp
+*.swo
 
-# База данных SQLite
-*.sqlite3
+# Виртуальное окружение Python
+.venv/
+venv/
+env/
 
-# Миграции
-**/migrations/*.py
-!**/migrations/__init__.py
-
-# Кеш Python
+# Файлы, которые создаёт Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*.sqlite3
+db.sqlite3
 
-# Логи
+# Файлы логов
 *.log
+
+# Файл переменных окружения (секретные данные)
+.env
+
+# Статические файлы, сгенерированные Django
+/static/
+media/
+
+# Файлы миграций, которые могут быть созданы заново
+*/migrations/*.py
+!*/migrations/__init__.py
