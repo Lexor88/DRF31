@@ -6,12 +6,13 @@ User = get_user_model()
 
 
 class CourseSerializer(serializers.ModelSerializer):
-    owner = serializers.ReadOnlyField(source='owner.username')
+    owner = serializers.HiddenField(default=serializers.CurrentUserDefault())  # Назначается автоматически
     moderators = serializers.SlugRelatedField(
         many=True,
         slug_field="username",
         queryset=User.objects.all(),
-        required=False
+        required=False,
+        default=list  # Безопасно добавляет пустой список, если не передан
     )
 
     class Meta:
@@ -20,7 +21,7 @@ class CourseSerializer(serializers.ModelSerializer):
 
 
 class LessonSerializer(serializers.ModelSerializer):
-    owner = serializers.ReadOnlyField(source='owner.username')
+    owner = serializers.HiddenField(default=serializers.CurrentUserDefault())  # Назначается автоматически
 
     class Meta:
         model = Lesson

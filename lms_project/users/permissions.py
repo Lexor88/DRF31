@@ -1,15 +1,17 @@
 from rest_framework import permissions
 
 
-class IsOwnerOrReadOnly(permissions.BasePermission):
-    """ Разрешение на редактирование только для владельца """
+class IsUserOrReadOnly(permissions.BasePermission):
+    """ Разрешает пользователям редактировать только свой профиль """
 
     def has_object_permission(self, request, view, obj):
-        return obj.owner == request.user or request.user.is_staff
+        return request.method in permissions.SAFE_METHODS or obj == request.user
 
 
-class IsModeratorOrReadOnly(permissions.BasePermission):
-    """ Разрешение на редактирование для модераторов, но без удаления """
+class IsModeratorReadOnly(permissions.BasePermission):
+    """ Разрешает модераторам просматривать и редактировать пользователей, но не удалять """
 
     def has_object_permission(self, request, view, obj):
-        return request.method in permissions.SAFE_METHODS or obj.moderators.filter(id=request.user.id).exists()
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return request.user.groups.filter(name="moderators").exists()

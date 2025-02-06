@@ -5,14 +5,26 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
     Разрешает изменять объекты только их владельцам.
     """
     def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
         return obj.owner == request.user
 
-class IsModeratorOrReadOnly(permissions.BasePermission):
+class IsModeratorReadOnly(permissions.BasePermission):
     """
-    Разрешает модераторам редактировать, но не создавать и удалять курсы и уроки.
+    Разрешает модераторам только просматривать и редактировать, но запрещает создание и удаление.
     """
     def has_permission(self, request, view):
-        return request.method in permissions.SAFE_METHODS or request.user.groups.filter(name="moderators").exists()
+        # Разрешаем GET, HEAD, OPTIONS для всех авторизованных
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        # Проверяем, что пользователь не модератор и метод не запрещен
+        if request.user.groups.filter(name="moderators").exists():
+            return request.method in ['GET', 'PUT', 'PATCH']
+        return False
 
     def has_object_permission(self, request, view, obj):
-        return request.method in permissions.SAFE_METHODS or request.user.groups.filter(name="moderators").exists()
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        if request.user.groups.filter(name="moderators").exists():
+            return request.method in ['GET', 'PUT', 'PATCH']
+        return False
