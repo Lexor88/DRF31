@@ -4,7 +4,6 @@ from django.contrib.auth.password_validation import validate_password
 
 User = get_user_model()
 
-
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
@@ -19,23 +18,6 @@ class UserSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        validated_data.pop("password2", None)  # Удаляем password2 перед созданием пользователя
+        validated_data.pop("password2", None)
         user = User.objects.create_user(**validated_data)
-        return user
-
-
-class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'password']
-
-    def create(self, validated_data):
-        user = User(
-            username=validated_data['username'],
-            email=validated_data.get('email', '')
-        )
-        user.set_password(validated_data['password'])  # Хешируем пароль перед сохранением
-        user.save()
         return user

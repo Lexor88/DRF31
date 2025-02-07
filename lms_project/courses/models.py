@@ -6,19 +6,31 @@ User = get_user_model()
 class Course(models.Model):
     title = models.CharField(max_length=255)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="owned_courses")
-    moderators = models.ManyToManyField(User, related_name="moderated_courses", blank=True)  # Добавляем модераторов
+    moderators = models.ManyToManyField(User, related_name="moderated_courses", blank=True)
 
-    objects = models.Manager()  # Явный менеджер
+    objects = models.Manager()
 
     def __str__(self):
         return self.title
+
 
 class Lesson(models.Model):
     title = models.CharField(max_length=255)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="lessons")
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="lessons")
 
-    objects = models.Manager()  # Явный менеджер
+    objects = models.Manager()
 
     def __str__(self):
         return self.title
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="subscriptions")
+    course = models.ForeignKey('Course', on_delete=models.CASCADE, related_name="subscribers")
+
+    class Meta:
+        unique_together = ('user', 'course')
+
+    def __str__(self):
+        return f"{self.user.username} подписан на {self.course.title}"
