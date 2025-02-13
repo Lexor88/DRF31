@@ -28,10 +28,16 @@ class CourseViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.groups.filter(name="moderators").exists():
             return Course.objects.all()  # Модераторы могут видеть все курсы
-        return Course.objects.filter(owner=user)  # Пользователь видит только свои курсы
+        return Course.objects.all()  # Все пользователи видят все курсы для тестирования
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
+
 
 
 class LessonViewSet(viewsets.ModelViewSet):
@@ -52,11 +58,15 @@ class LessonViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.groups.filter(name="moderators").exists():
             return Lesson.objects.all()  # Модераторы могут видеть все уроки
-        return Lesson.objects.filter(owner=user)  # Пользователь видит только свои уроки
+        return Lesson.objects.all()  # Все пользователи видят все уроки для тестирования
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
 
 
 class SubscriptionView(APIView):

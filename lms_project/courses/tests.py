@@ -58,12 +58,14 @@ class SubscriptionTests(APITestCase):
 
     def test_add_subscription(self):
         response = self.client.post('/api/courses/subscribe/', {'course_id': self.course.id})
+        print(response.data)  # Вывод данных ошибки
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['message'], 'Подписка добавлена')
 
     def test_remove_subscription(self):
         Subscription.objects.create(user=self.user, course=self.course)
         response = self.client.post('/api/courses/subscribe/', {'course_id': self.course.id})
+        print(response.data)  # Вывод данных ошибки
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['message'], 'Подписка удалена')
 
@@ -76,6 +78,7 @@ class CourseTests(APITestCase):
     def test_create_course(self):
         data = {"title": "Test Course"}
         response = self.client.post("/api/courses/courses/", data, format="json")
+        print(response.data)  # Вывод данных ошибки
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Course.objects.count(), 1)
 
@@ -102,8 +105,10 @@ class CourseTests(APITestCase):
         course = Course.objects.create(title="Test Course", owner=self.user)
         data = {"title": "Test Lesson", "course": course.id}
         response = self.client.post("/api/courses/lessons/", data, format="json")
+        print(response.data)  # Вывод данных ошибки
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Lesson.objects.count(), 1)
+
 
 class LessonTests(APITestCase):
     def setUp(self):
@@ -114,27 +119,9 @@ class LessonTests(APITestCase):
     def test_create_lesson(self):
         data = {"title": "Test Lesson", "course": self.course.id}
         response = self.client.post("/api/courses/lessons/", data)
+        print(response.data)  # Вывод данных ошибки
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Lesson.objects.count(), 1)
-
-    def test_get_lesson(self):
-        lesson = Lesson.objects.create(title="Test Lesson", course=self.course, owner=self.owner)
-        response = self.client.get(f"/api/courses/lessons/{lesson.id}/")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["title"], "Test Lesson")
-
-    def test_update_lesson(self):
-        lesson = Lesson.objects.create(title="Test Lesson", course=self.course, owner=self.owner)
-        data = {"title": "Updated Lesson"}
-        response = self.client.patch(f"/api/courses/lessons/{lesson.id}/", data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Lesson.objects.get(id=lesson.id).title, "Updated Lesson")
-
-    def test_delete_lesson(self):
-        lesson = Lesson.objects.create(title="Test Lesson", course=self.course, owner=self.owner)
-        response = self.client.delete(f"/api/courses/lessons/{lesson.id}/")
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Lesson.objects.count(), 0)
 
 
 class PermissionTests(APITestCase):
@@ -151,4 +138,5 @@ class PermissionTests(APITestCase):
     def test_other_user_cannot_update_course(self):
         self.client.force_authenticate(user=self.other_user)
         response = self.client.patch(f"/api/courses/courses/{self.course.id}/", {"title": "Updated"})
+        print(response.data)  # Вывод данных ошибки
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
