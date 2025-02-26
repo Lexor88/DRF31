@@ -23,6 +23,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'users',
     'courses',
+    'drf_spectacular',  # Добавляем библиотеку документации
+    'payments',  # Добавляем приложение для Stripe
 ]
 
 MIDDLEWARE = [
@@ -96,6 +98,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',  # Добавляем OpenAPI схему для документации
 }
 
 # 🔥 Настройки JWT, чтобы токены не истекали слишком быстро
@@ -106,3 +109,14 @@ SIMPLE_JWT = {
 
 # 🔥 Разрешаем CORS для API
 CORS_ALLOW_ALL_ORIGINS = True
+
+# 🔥 Настройки для Stripe
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'API Documentation',
+    'DESCRIPTION': 'API for managing courses and payments.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
