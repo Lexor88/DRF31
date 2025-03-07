@@ -4,10 +4,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from datetime import timedelta
 from .models import Course, Lesson, Subscription
 from .serializers import CourseSerializer, LessonSerializer
 from .permissions import IsOwner, IsModerator
 from .paginators import CoursePagination
+from .tasks import send_course_update_email
+
 
 @extend_schema(tags=["Courses"])
 class CourseViewSet(viewsets.ModelViewSet):
@@ -37,10 +41,28 @@ class CourseViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.groups.filter(name="moderators").exists():
             return Course.objects.all()
-        return Course.objects.filter(owner=user)  # Только свои курсы
+        return Course.objects.filter(owner=user)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    def perform_update(self, serializer):
+        course = serializer.save()
+
+        # Проверяем время последнего обновления, если прошло меньше 4 часов — выходим
+        if course.updated_at and timezone.now() - course.updated_at < timedelta(hours=4):
+            return
+
+        # Получаем подписчиков
+        subscribers = Subscription.objects.filter(course=course).select_related('user')
+
+        # Запускаем асинхронную отправку писем
+        for subscription in subscribers:
+            send_course_update_email.delay(subscription.user.email, course.name)
+
+        # Обновляем время последнего обновления
+        course.updated_at = timezone.now()
+        course.save()
 
 
 @extend_schema(tags=["Lessons"])

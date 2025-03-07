@@ -1,16 +1,19 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from courses.validators import validate_link
+from django.utils import timezone
 
 User = get_user_model()
 
+
 class Course(models.Model):
     name = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)  # Добавил описание
+    description = models.TextField(blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="courses")
     stripe_product_id = models.CharField(max_length=255, blank=True, null=True)
     stripe_price_id = models.CharField(max_length=255, blank=True, null=True)
+    updated_at = models.DateTimeField(default=timezone.now)  # ➕ Добавили поле
 
     def __str__(self):
         return self.name
